@@ -1,0 +1,4 @@
+,count,min_sales_volume,max_sales_volume,mean_sales_volume,rule,accuracy
+High,15246.0,7000.0,9999.0,8497.496326905417,,
+Low,34754.0,100.0,6999.0,3562.838953789492,,
+threshold_rule,,,,,High if Sales_Volume >= 7000 else Low,1.0

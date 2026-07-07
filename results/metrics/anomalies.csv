@@ -1,0 +1,6 @@
+Anomaly check,Number of rows
+Year van opsega 1980-2026,0
+Engine_Size_L van opsega 0-8,0
+Mileage_KM negativna ili preko 500000,0
+Price_USD negativna ili preko 250000,0
+Sales_Volume negativan,0
