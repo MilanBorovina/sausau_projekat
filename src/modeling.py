@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
 
-#alati za preprocessing, modele i evaluaciju
+# alati za preprocessing, modele i evaluaciju
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
@@ -42,11 +42,11 @@ def build_models():
         ]),
         "KNN": Pipeline([ # K najblizih suseda
             ("preprocessor", build_preprocessor(scale_numeric=True)),
-            ("classifier", KNeighborsClassifier(n_neighbors=7, weights="distance")),
+            ("classifier", KNeighborsClassifier(n_neighbors=21, weights="distance")),
         ]),
         "Gradient Boosting": Pipeline([
             ("preprocessor", build_preprocessor()),
-            ("classifier", GradientBoostingClassifier(n_estimators=150, learning_rate=0.05, max_depth=15, random_state=RANDOM_STATE)), #br stabala, brzina ucenja, dubina stabla
+            ("classifier", GradientBoostingClassifier(n_estimators=150, learning_rate=0.05, max_depth=3, random_state=RANDOM_STATE)), #br stabala, brzina ucenja, dubina stabla
         ]),
         "Decision Tree": Pipeline([ # stablo odlucivanja
             ("preprocessor", build_preprocessor()),
@@ -64,26 +64,30 @@ def cross_validate_models(models, x_train, y_train, cv_splits=3):
     cv = StratifiedKFold(n_splits=cv_splits, shuffle=True, random_state=RANDOM_STATE)
     rows = []
     for model_name, model in models.items():
+        # trenira i proverava model kroz unakrsnu validaciju
         scores = cross_val_score(model, x_train, y_train, cv=cv, scoring="f1_macro")
         rows.append({
-            "model": model_name,
-            "cv_f1_macro_mean": scores.mean(),
-            "cv_f1_macro_std": scores.std(), # racuna f1 macro za svaku podelu
+            "model": model_name,    # ime modela
+            "cv_f1_macro_mean": scores.mean(),  # srednja vrednost F1 macro metrike kroz sv podele
+            "cv_f1_macro_std": scores.std(),    #koliko rezultat varira izmedju podela
         })
     return pd.DataFrame(rows)
 
-
+# koji su atributi najvazniji za finalni model
 def get_feature_importance(model):
     preprocessor = model.named_steps["preprocessor"]
     classifier = model.named_steps["classifier"]
 
+    # pokusava da dobije imena atributa posle preprocesiranja(pokusava jer se kategoriske kolone menjaju preko OneHotEncoder-a) ako ne uspe pravi genericka imena
     try:
         feature_names = preprocessor.get_feature_names_out()
     except AttributeError:
         feature_names = [f"feature_{index}" for index in range(len(classifier.feature_importances_))]
 
+    # neki modeli imaju direktnu informaciju o vaznosti atributa
     if hasattr(classifier, "feature_importances_"):
         importances = classifier.feature_importances_
+    # gledamo koji atribut najvise utice
     elif hasattr(classifier, "coef_"):
         importances = abs(classifier.coef_[0])
     else:
@@ -94,7 +98,7 @@ def get_feature_importance(model):
         "importance": importances,
     }).sort_values("importance", ascending=False)
 
-
+# cuva finalni istrenirani model
 def save_model(model):
-    MODEL_PATH.parent.mkdir(exist_ok=True)
-    joblib.dump(model, MODEL_PATH)
+    MODEL_PATH.parent.mkdir(exist_ok=True) # putanja iz config.py
+    joblib.dump(model, MODEL_PATH) # cuva model u fajlu

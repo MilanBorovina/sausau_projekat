@@ -118,11 +118,13 @@ def main():
         print("Matrica konfuzije (validacijski skup)")
         print(val_confusion)
 
+    #validacione matrike se spajaju sa cross-validation metrikama i cuvaju u csv fajl
     validation_metrics_data = metrics_to_dataframe(validation_metrics_rows)
     validation_metrics_data = validation_metrics_data.merge(cv_results, on="model", how="left")
     validation_metrics_data.to_csv(METRICS_DIR / "validation_model_comparison.csv", index=False)
     validation_metrics_data.to_csv(METRICS_DIR / "model_comparison.csv", index=False)
 
+    #izbor najboljeg modela na osnovu F1 macro metrike na validacionom skupu (racuna F1 zaobe klase pa uzima prosek)
     best_row = validation_metrics_data.sort_values(by="f1_macro", ascending=False).iloc[0]
     final_model_name = best_row["model"]
     tuned_model = build_models()[final_model_name]
@@ -150,15 +152,24 @@ def main():
     print(tuned_report)
     print(tuned_confusion)
 
+    #cuvanje finalnih metrika
     tuned_metrics_data = metrics_to_dataframe([tuned_metrics])
     tuned_metrics_data.to_csv(METRICS_DIR / "final_model_metrics.csv", index=False)
     tuned_metrics_data.to_csv(METRICS_DIR / "test_model_comparison.csv", index=False)
-    save_classification_report(METRICS_DIR / "final_classification_report.txt", final_model_name, tuned_report)
+    save_classification_report(
+        METRICS_DIR / "final_classification_report.txt",
+        final_model_name,
+        tuned_report,
+        tuned_metrics,
+        tuned_confusion,
+    )
 
+    #cuva tabelu najvaznijih atributa ako postoji za dati model
     feature_importance = get_feature_importance(tuned_model)
     if feature_importance is not None:
         feature_importance.to_csv(METRICS_DIR / "feature_importance.csv", index=False)
 
+    #ponovno generisanje grafika sa dodatnim grafovima za finalni model
     save_all_figures(
         dataset,
         feature_importance=feature_importance,

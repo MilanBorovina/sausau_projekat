@@ -1,10 +1,18 @@
 Classification report - Decision Tree
 
-              precision    recall  f1-score   support
+Pregled po klasama
+-----------------
+High: precision=0.3128, recall=0.4053, f1=0.3531, support=2287
+Low:  precision=0.7002, recall=0.6092, f1=0.6516, support=5213
 
-        High       0.31      0.41      0.35      2287
-         Low       0.70      0.61      0.65      5213
+Zajednicke metrike
+-----------------
+accuracy=0.5471
+macro avg:    precision=0.5065, recall=0.5073, f1=0.5023
+weighted avg: precision=0.5820, recall=0.5471, f1=0.5605
+roc_auc=0.5091
 
-    accuracy                           0.55      7500
-   macro avg       0.51      0.51      0.50      7500
-weighted avg       0.58      0.55      0.56      7500
+Matrica konfuzije [High, Low]
+-----------------------------
+[[ 927 1360]
+ [2037 3176]]
