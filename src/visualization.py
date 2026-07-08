@@ -10,7 +10,7 @@ from config import (
     TARGET_COLUMN,
 )
 
-
+# poziva sve ostale funkcije za klase
 def save_all_figures(dataset, feature_importance=None, confusion=None, model_name=None):
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     save_class_distribution(dataset)
@@ -24,7 +24,7 @@ def save_all_figures(dataset, feature_importance=None, confusion=None, model_nam
     if confusion is not None and model_name is not None:
         save_confusion_matrix(confusion, model_name)
 
-
+# funkcija crta koliko ima high a koliko low primera u datasetu
 def save_class_distribution(dataset):
     counts = dataset[TARGET_COLUMN].value_counts()
     plt.figure(figsize=(7, 5))
@@ -36,7 +36,7 @@ def save_class_distribution(dataset):
     plt.savefig(FIGURES_DIR / "class_distribution.png")
     plt.close()
 
-
+# pravi histogram za svaki numericki atribut
 def save_numeric_histograms(dataset):
     for column in NUMERIC_FEATURES:
         plt.figure(figsize=(8, 5))
@@ -48,7 +48,7 @@ def save_numeric_histograms(dataset):
         plt.savefig(FIGURES_DIR / f"{column.lower()}_histogram.png")
         plt.close()
 
-
+# pokazuje raspon vrednosti nekog numerickog atributa i pomaze nam da vidimo anomalije
 def save_boxplots(dataset):
     for column in ["Price_USD", "Mileage_KM", "Engine_Size_L"]:
         plt.figure(figsize=(8, 4))
@@ -58,7 +58,7 @@ def save_boxplots(dataset):
         plt.savefig(FIGURES_DIR / f"{column.lower()}_boxplot.png")
         plt.close()
 
-
+# pravi korelacionu mapu, grafikon koji pokazuje koliko su atributi povezani
 def save_correlation_heatmap(dataset):
     corr = dataset[CORRELATION_NUMERIC_FEATURES].corr()
     plt.figure(figsize=(8, 6))
@@ -74,7 +74,7 @@ def save_correlation_heatmap(dataset):
     plt.savefig(FIGURES_DIR / "correlation_heatmap.png")
     plt.close()
 
-
+# pravi grafikon koji pokazuje vezu izmedju kategorija (atributa) i ciljne klase Sales_Classification
 def save_category_target_plots(dataset):
     for column in CATEGORICAL_FEATURES:
         table = pd.crosstab(dataset[column], dataset[TARGET_COLUMN], normalize="index") * 100
@@ -88,7 +88,7 @@ def save_category_target_plots(dataset):
         plt.savefig(FIGURES_DIR / f"{column.lower()}_vs_sales_classification.png")
         plt.close()
 
-
+# pravi grafikon koji pokazuje da li je Sales_Volume direktno povezana sa Sales_Classification
 def save_sales_volume_leakage_plot(dataset):
     plt.figure(figsize=(8, 5))
     dataset.boxplot(column=LEAKAGE_COLUMN, by=TARGET_COLUMN)
@@ -102,7 +102,7 @@ def save_sales_volume_leakage_plot(dataset):
     plt.savefig(FIGURES_DIR / "sales_volume_leakage.png")
     plt.close()
 
-
+# pravi grafikon najvaznijih atributa za model
 def save_feature_importance(feature_importance):
     top = feature_importance.sort_values("importance", ascending=False).head(15)
     plt.figure(figsize=(9, 6))
@@ -114,7 +114,7 @@ def save_feature_importance(feature_importance):
     plt.savefig(FIGURES_DIR / "feature_importance.png")
     plt.close()
 
-
+# pravi sliku matrice konfuzije za finalni model
 def save_confusion_matrix(confusion, model_name):
     plt.figure(figsize=(5, 4))
     plt.imshow(confusion, cmap="Blues")

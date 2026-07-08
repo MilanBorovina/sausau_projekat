@@ -7,7 +7,7 @@ import pandas as pd
 BASE_DIR = Path(__file__).resolve().parents[1]
 MODEL_PATH = BASE_DIR / "models" / "bmw_sales_model.joblib"
 
-
+# ucitava finalni model iz fajla
 model = joblib.load(MODEL_PATH)
 
 new_car = pd.DataFrame([
@@ -24,6 +24,7 @@ new_car = pd.DataFrame([
     }
 ])
 
+# model pravi predikciju rezultata
 prediction = model.predict(new_car)[0]
 
 print("Ulazni podaci")
@@ -31,8 +32,9 @@ print(new_car)
 print("\nPredikcija modela")
 print(prediction)
 
+# proverava da li model ume da izracuna verovatnocu po klasama
 if hasattr(model, "predict_proba"):
-    probabilities = model.predict_proba(new_car)[0]
+    probabilities = model.predict_proba(new_car)[0] # verovatnoce za klase
     classes = model.classes_
     print("\nVerovatnoce po klasama")
     for class_label, probability in zip(classes, probabilities):

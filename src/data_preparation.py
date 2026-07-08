@@ -8,43 +8,50 @@ from config import (
     TARGET_COLUMN,
 )
 
-
+# ucitava dataset iz csv fajla
 def load_dataset(path=DATA_PATH):
     return pd.read_csv(path)
 
 
 def clean_dataset(dataset):
-    dataset = dataset.copy()
-    dataset = dataset.drop_duplicates()
-    dataset = dataset.dropna()
+    dataset = dataset.copy()    # kopra dataset
+    dataset = dataset.drop_duplicates() # brise duplikate
+    dataset = dataset.dropna()  # brise redove sa nedostajucim vrednostima
     return dataset
 
 
 def print_data_quality(dataset):
+
+    # pokazuje prvih 5 redova da vidim izgled tabele
     print("Prvih nekoliko redova")
     print(dataset.head())
 
+    # ispisuje br redova i kolona (50000, 11)
     print("\nDimenzije skupa")
     print(dataset.shape)
 
+    # koliko nedostajucih vrednosti u svakoj koloni
     print("\nNedostajuce vrednosti")
     print(dataset.isna().sum())
 
     print("\nBroj duplikata")
     print(dataset.duplicated().sum())
 
+    # koliko ima primera svake klase
     print("\nRaspodela ciljnih klasa")
     print(dataset[TARGET_COLUMN].value_counts())
 
 
+# razdvaja dataset na ulazne podatke i ciljnu kolonu
 def split_features_target(dataset):
     x = dataset[MODEL_FEATURES]
     y = dataset[TARGET_COLUMN]
     return x, y
 
-
+# provera da li Sales_Volume direktno utice na Sales_Classification
 def analyze_sales_volume_leakage(dataset):
     result = {}
+    # grupise dataset po ciljnoj klasi (High, Low)
     for class_name, group in dataset.groupby(TARGET_COLUMN):
         result[class_name] = {
             "count": len(group),
@@ -53,15 +60,18 @@ def analyze_sales_volume_leakage(dataset):
             "mean_sales_volume": group[LEAKAGE_COLUMN].mean(),
         }
 
+    # pravilo za predikciju na osnovu Sales_Volume, ako je >= 7000 onda High
     rule_prediction = dataset[LEAKAGE_COLUMN].apply(lambda value: "High" if value >= 7000 else "Low")
+    # uporedjuje pravilo sa pravim klasam i racuna accuracy (bice 1)
     accuracy = (rule_prediction == dataset[TARGET_COLUMN]).mean()
 
+    # dodaje pravilo i accuracy u tabelu
     leakage_table = pd.DataFrame(result).T
     leakage_table.loc["threshold_rule", "rule"] = "High if Sales_Volume >= 7000 else Low"
     leakage_table.loc["threshold_rule", "accuracy"] = accuracy
     return leakage_table
 
-
+# racun  koliko se procentualno svaka kategorija atributa pojavljuje u High i Low klasama
 def category_class_percentages(dataset):
     rows = []
     for column in CATEGORICAL_FEATURES:
@@ -81,7 +91,7 @@ def category_class_percentages(dataset):
             })
     return pd.DataFrame(rows)
 
-
+# anomalije u datasetu, da li su vrednosti van opsega
 def anomaly_table(dataset):
     checks = [
         ("Year van opsega 1980-2026", (dataset["Year"] < 1980) | (dataset["Year"] > 2026)),

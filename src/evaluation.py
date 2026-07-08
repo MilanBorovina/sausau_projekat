@@ -1,19 +1,19 @@
 import pandas as pd
 
 from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    confusion_matrix,
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
+    accuracy_score,         # tacnost podataka
+    classification_report,  # detaljan izvestaj za svaku klasu (precision, recall, f1-score)
+    confusion_matrix,       # pravi matricu konfuzije
+    f1_score,               # kombinacija precisin i recall
+    precision_score,        # od izabranih u klasu koliko zapravo pripada toj klasi
+    recall_score,           # od svih primera koji pripadaju nekoj klasi koliko je algoritam uspeo da pronadje
+    roc_auc_score,          # koliko dobro model razdvaja klase kroz razlicite pragove odlucavanja
 )
 
-
+# koristi se i za validacioni i za test skup
 def evaluate_model(model, x_test, y_test, model_name):
-    y_pred = model.predict(x_test)
-    metrics = {
+    y_pred = model.predict(x_test)  # model dobija ulazne podatke i pravi predikciju
+    metrics = {     # recnik sa metrikama za jedan model
         "model": model_name,
         "accuracy": accuracy_score(y_test, y_pred),
         "precision_high": precision_score(y_test, y_pred, pos_label="High", zero_division=0),
@@ -32,21 +32,22 @@ def evaluate_model(model, x_test, y_test, model_name):
         "support_low": int((y_test == "Low").sum()),
     }
 
-    if hasattr(model, "predict_proba"):
+    if hasattr(model, "predict_proba"):     # ako model daje verovatnoce po klasama
         y_prob = model.predict_proba(x_test)
-        high_index = list(model.classes_).index("High")
+        high_index = list(model.classes_).index("High") # pronalazi na kojoj poziciji je klasa High
         metrics["roc_auc"] = roc_auc_score((y_test == "High").astype(int), y_prob[:, high_index])
-    elif hasattr(model, "decision_function"):
+    elif hasattr(model, "decision_function"):   # ako model ima decision_function (koliko je siguran da primer pripada klasi)
         scores = model.decision_function(x_test)
         metrics["roc_auc"] = roc_auc_score((y_test == "High").astype(int), scores)
     else:
         metrics["roc_auc"] = None
 
-    report = classification_report(y_test, y_pred, zero_division=0)
-    cm = confusion_matrix(y_test, y_pred, labels=["High", "Low"])
+    report = classification_report(y_test, y_pred, zero_division=0) # pravi tekstualni izvestaj
+    cm = confusion_matrix(y_test, y_pred, labels=["High", "Low"])   #pravi matricu konfuzije
     return metrics, report, cm
 
 
+# cuva classification report u lepsem formatu: prvo High, zatim Low, pa zajednicke metrike
 def save_classification_report(path, model_name, report, metrics=None, confusion=None):
     with open(path, "w", encoding="utf-8") as file:
         file.write(f"Classification report - {model_name}\n\n")
@@ -92,10 +93,9 @@ def save_classification_report(path, model_name, report, metrics=None, confusion
                 file.write("-----------------------------\n")
                 file.write(str(confusion))
                 file.write("\n")
-
         else:
             file.write(report)
 
-
+# listu pretvara u tabelu
 def metrics_to_dataframe(metrics_list):
     return pd.DataFrame(metrics_list)
