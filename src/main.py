@@ -4,9 +4,11 @@ from sklearn.model_selection import train_test_split
 
 #uzima putanje i konstante iz config.py
 from config import (
+    CATEGORICAL_FEATURES,
     FIGURES_DIR,
     METRICS_DIR,
     MODEL_PATH,
+    NUMERIC_FEATURES,
     RANDOM_STATE,
     RESULTS_DIR,
     TARGET_COLUMN,
@@ -24,7 +26,13 @@ from data_preparation import (
 #importovanje funkcija za ocenu modela
 from evaluation import evaluate_model, metrics_to_dataframe, save_classification_report
 #importovanje modela
-from modeling import build_models, cross_validate_models, get_feature_importance, save_model
+from modeling import (
+    build_models,
+    cross_validate_models,
+    get_feature_importance,
+    get_important_original_features,
+    save_model,
+)
 #importovanje funkcija za grafove
 from visualization import save_all_figures
 
@@ -128,6 +136,69 @@ def main():
     best_row = validation_metrics_data.sort_values(by="f1_macro", ascending=False).iloc[0]
     final_model_name = best_row["model"]
     tuned_model = build_models()[final_model_name]
+
+    # DODATO: izbor najbitnijih atributa na osnovu modela treniranog samo na trening skupu
+    selection_feature_importance = get_feature_importance(models[final_model_name])
+    important_features = get_important_original_features(selection_feature_importance)
+
+    # DODATO: poredi rezultate modela kada koriste sve atribute i kada koriste samo najbitnije atribute
+    if important_features is not None and 0 < len(important_features) < x_train.shape[1]:
+        pd.DataFrame({"important_feature": important_features}).to_csv(
+            METRICS_DIR / "selected_important_features.csv",
+            index=False,
+        )
+
+        important_categorical_features = [
+            feature for feature in CATEGORICAL_FEATURES if feature in important_features
+        ]
+        important_numeric_features = [
+            feature for feature in NUMERIC_FEATURES if feature in important_features
+        ]
+        important_models = build_models(
+            categorical_features=important_categorical_features,
+            numeric_features=important_numeric_features,
+        )
+        important_metrics_rows = []
+
+        for model_name, model in important_models.items():
+            model.fit(x_train[important_features], y_train)
+            important_metrics, _, _ = evaluate_model(
+                model,
+                x_val[important_features],
+                y_val,
+                model_name,
+            )
+            important_metrics_rows.append(important_metrics)
+
+        all_features_comparison = validation_metrics_data.copy()
+        all_features_comparison["feature_set"] = "svi_atributi"
+
+        important_features_comparison = metrics_to_dataframe(important_metrics_rows)
+        important_features_comparison["feature_set"] = "najbitniji_atributi"
+
+        all_vs_important_features = pd.concat(
+            [all_features_comparison, important_features_comparison],
+            ignore_index=True,
+            sort=False,
+        )
+        comparison_columns = [
+            "feature_set",
+            "model",
+            "accuracy",
+            "precision_high",
+            "recall_high",
+            "f1_high",
+            "precision_low",
+            "recall_low",
+            "f1_low",
+            "f1_macro",
+            "f1_weighted",
+            "roc_auc",
+        ]
+        all_vs_important_features[comparison_columns].round(4).to_csv(
+            METRICS_DIR / "all_vs_important_features_comparison.csv",
+            index=False,
+        )
 
     print("\n" + "="*60)
     print("IZABRANI MODEL - REZULTAT NA VALIDACIJSKOM SKUPU")

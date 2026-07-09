@@ -1,0 +1,11 @@
+feature_set,model,accuracy,precision_high,recall_high,f1_high,precision_low,recall_low,f1_low,f1_macro,f1_weighted,roc_auc
+svi_atributi,Logistic Regression,0.5009,0.3028,0.4889,0.374,0.693,0.5062,0.5851,0.4795,0.5207,0.5014
+svi_atributi,KNN,0.6371,0.3006,0.1434,0.1942,0.6943,0.8536,0.7658,0.48,0.5915,0.4876
+svi_atributi,Gradient Boosting,0.6948,0.0,0.0,0.0,0.695,0.9996,0.8199,0.41,0.5699,0.5001
+svi_atributi,Decision Tree,0.5613,0.3023,0.3354,0.318,0.6937,0.6605,0.6767,0.4973,0.5673,0.4944
+svi_atributi,Random Forest,0.5928,0.2919,0.2352,0.2605,0.6908,0.7497,0.719,0.4898,0.5792,0.4868
+najbitniji_atributi,Logistic Regression,0.4991,0.3024,0.4919,0.3746,0.6926,0.5022,0.5822,0.4784,0.5189,0.4943
+najbitniji_atributi,KNN,0.6349,0.3081,0.1583,0.2091,0.6957,0.844,0.7627,0.4859,0.5939,0.499
+najbitniji_atributi,Gradient Boosting,0.694,0.0,0.0,0.0,0.6947,0.9985,0.8194,0.4097,0.5695,0.4914
+najbitniji_atributi,Decision Tree,0.5292,0.2969,0.3975,0.3399,0.6895,0.587,0.6341,0.487,0.5444,0.4915
+najbitniji_atributi,Random Forest,0.5747,0.2956,0.2855,0.2905,0.6912,0.7015,0.6963,0.4934,0.5726,0.4918
